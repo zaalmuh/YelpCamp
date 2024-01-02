@@ -6,10 +6,8 @@ const express = require('express');
 const app = express();
 const path = require('path');
 const mongoose = require('mongoose');
-// const dbUrl = process.env.DB_URL;
 
-// mongoose.connect(dbUrl);
-const dbUrl = 'mongodb://127.0.0.1:27017/yelp-camp';
+const dbUrl = process.env.DB_URL || 'mongodb://127.0.0.1:27017/yelp-camp';
 mongoose.connect(dbUrl);
 
 const methodOverride = require('method-override');
@@ -31,12 +29,14 @@ db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', () => {
   console.log('Database connected');
 });
+
+const secret = process.env.SECRET || 'thisshouldbeabettersecret!';
 const MongoStore = require('connect-mongo');
 const store = MongoStore.create({
   mongoUrl: dbUrl,
   touchAfter: 24 * 60 * 60,
   crypto: {
-    secret: 'thisshouldbeabettersecret!',
+    secret,
   },
 });
 
@@ -50,7 +50,7 @@ app.use(mongoSanitize());
 const sessionConfig = {
   store,
   name: 'session',
-  secret: 'thisshouldbeabettersecret!',
+  secret,
   resave: false,
   saveUninitialized: true,
   cookie: {
